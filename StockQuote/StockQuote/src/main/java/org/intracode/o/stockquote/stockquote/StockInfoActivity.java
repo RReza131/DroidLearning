@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.DocumentsContract;
 import android.util.Log;
+import android.view.Menu;
 import android.widget.TextView;
 
 import org.w3c.dom.Document;
@@ -76,13 +77,14 @@ public class StockInfoActivity extends Activity{
         String stockSymbol = Intent.getStringExtra(MainActivity.STOCK_SYMBOL); //reciving what is passed from Main Activity line 156
 
         //initialize all TextViews
-        TextView companyNameTextView = (TextView) findViewById(R.id.companyNameTextView);
-        TextView yearLowTextView = (TextView) findViewById(R.id.yearLowTextView);
-        TextView daysLowTextView = (TextView) findViewById(R.id.daysLowStockView);
-        TextView daysHighTextView = (TextView) findViewById(R.id.daysHighStockView);
-        TextView lastTradePriceOnlyTextView = (TextView) findViewById(R.id.lastTradePriceOnlyTextView);
-        TextView changeTextView = (TextView) findViewById(R.id.changeTextView);
-        TextView daysRangeTextView = (TextView) findViewById(R.id.daysRangeTextView);
+        companyNameTextView = (TextView) findViewById(R.id.companyNameTextView);
+        yearLowTextView = (TextView) findViewById(R.id.yearLowTextView);
+        yearHighTextView = (TextView) findViewById(R.id.yearHighTextView);
+        daysLowTextView = (TextView) findViewById(R.id.daysLowStockView);
+        daysHighTextView = (TextView) findViewById(R.id.daysHighStockView);
+        lastTradePriceOnlyTextView = (TextView) findViewById(R.id.lastTradePriceOnlyTextView);
+        changeTextView = (TextView) findViewById(R.id.changeTextView);
+        daysRangeTextView = (TextView) findViewById(R.id.daysRangeTextView);
 
         //using TAG to send info to the logcat
         Log.d(TAG, "Before URL Creation" + stockSymbol);
@@ -92,7 +94,7 @@ public class StockInfoActivity extends Activity{
 
         //android tool kit IS NOT thread safe
         //To get web information you have to do it in its own thread
-        new MyAsyncTask().execute();
+        new MyAsyncTask().execute(yqlURL);
 
     }
 
@@ -135,14 +137,14 @@ public class StockInfoActivity extends Activity{
                             StockInfo theStock = getStockInformation(docEle);
 
                             //static methods coming from StockInfo.Java
-                            String name = theStock.getName();
-                            String yearLow = theStock.getYearLow();
-                            String yearHigh = theStock.getYearHigh();
-                            String daysLow = theStock.getDaysLow();
-                            String daysHigh = theStock.getDaysHigh();
-                            String lastTradePriceOnly = theStock.getLastTradePriceOnly();
-                            String change = theStock.getChange();
-                            String daysRange = theStock.getDaysRange();
+                            name = theStock.getName();
+                            yearLow = theStock.getYearLow();
+                            yearHigh = theStock.getYearHigh();
+                            daysLow = theStock.getDaysLow();
+                            daysHigh = theStock.getDaysHigh();
+                            lastTradePriceOnly = theStock.getLastTradePriceOnly();
+                            change = theStock.getChange();
+                            daysRange = theStock.getDaysRange();
                         }
 
                     }
@@ -204,8 +206,6 @@ public class StockInfoActivity extends Activity{
             }
             return tagValueToReturn;
         }
-
-
 
     }
 
