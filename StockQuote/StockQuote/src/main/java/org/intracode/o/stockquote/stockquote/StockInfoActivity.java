@@ -9,16 +9,26 @@ import android.util.Log;
 import android.view.Menu;
 import android.widget.TextView;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -29,6 +39,9 @@ import javax.xml.parsers.ParserConfigurationException;
 /**
  * Created by breza on 6/11/2014.
  */
+
+
+
 public class StockInfoActivity extends Activity{
 
     private static final String TAG = "STOCKQUOTE"; //used for logcat to output messages for the debug
@@ -68,6 +81,14 @@ public class StockInfoActivity extends Activity{
     String yahooURLFirst = "https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quote%20where%20symbol%20in%20(%22";
     String yahooURLSecond = "%22)&diagnostics=true&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys";
 
+    //name of nodes from the yahoo.com source we are pulling from
+    String[][] xmlPullParserArray = {{"AverageDailyVolume", "0"},{"Change", "0"},{"DaysLow", "0"},
+            {"DaysHigh", "0"},{"YearLow", "0"},{"YearHigh", "0"},{"MarketCapitalization", "0"},
+            {"LastTradePriceOnly", "0"},{"DaysRange", "0"},{"Name", "0"},{"Symbol", "0"},
+            {"Volume", "0"}, {"StockExchange", "0"}};
+
+    int parseArrayIncrement = 0;
+
     //extended Activity and manually defined the onCreateMethod
     protected void onCreate(Bundle saveInstanceState){
         super.onCreate(saveInstanceState);
@@ -99,113 +120,111 @@ public class StockInfoActivity extends Activity{
     }
 
     private class MyAsyncTask extends AsyncTask<String, String, String>{
-
         protected String doInBackground(String... args) { //String... args same as String[] args
-            try {
-                URL url = new URL(args[0]);
+            try{
+                XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
 
-                //create a connection between the application and URL we are trying to get
-                URLConnection connection;
-                connection = url.openConnection();
+                factory.setNamespaceAware(true);
 
-                //allow us to take advantage of HTTP features
-                HttpURLConnection httpConnection = (HttpURLConnection) connection;
+                XmlPullParser parser = factory.newPullParser();
 
-                //tells us if we were able to connect properly
-                int responseCode = httpConnection.getResponseCode();
+                parser.setInput(new InputStreamReader(getURlData(args[0])));
 
-                if (responseCode == httpConnection.HTTP_OK) {
-                    InputStream in = httpConnection.getInputStream();
+                beginDocument(parser, "query"); //why are we passing in query?
+                //get the targeted event type that starts at Start_Document
+                int eventType = parser.getEventType();
 
-                    //Pulling XML using the DOM Could also use XML pull parser
-                    //dbf below allow us to parse DOM objects
-                    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance().newInstance();
+                do{
+                    //cycle through elements of XML just as long as it is not a start or endtag
+                    //dont understand - so this is going ot cycle through all the elements  then do parser.next() and everything below for each?
+                    //wouldn't you want parser.next() and everything below in your nextElement while loop as its going through each element?
+                    nextElement(parser);
 
-                    //provides DOM document from the XML page
-                    DocumentBuilder db = dbf.newDocumentBuilder();
+                    parser.next();
 
-                    Document dom = db.parse(in);
+                    eventType = parser.getEventType();
 
-                    Element docEle = dom.getDocumentElement();
+                    //check to see if the value was found between two tags
+                    if(eventType == XmlPullParser.TEXT){
 
-                    NodeList nl = docEle.getElementsByTagName("quote");
+                        String valueFromXML = parser.getText();
 
-                    if (nl != null && nl.getLength() > 0) {
-                        //add the for loop to be able to get multiple quotes entered all at the same time
-                        //not doing in this application but in real world you might
-                        for (int i = 0; i < nl.getLength(); i++) {
-                            StockInfo theStock = getStockInformation(docEle);
-
-                            //static methods coming from StockInfo.Java
-                            name = theStock.getName();
-                            yearLow = theStock.getYearLow();
-                            yearHigh = theStock.getYearHigh();
-                            daysLow = theStock.getDaysLow();
-                            daysHigh = theStock.getDaysHigh();
-                            lastTradePriceOnly = theStock.getLastTradePriceOnly();
-                            change = theStock.getChange();
-                            daysRange = theStock.getDaysRange();
-                        }
+                        xmlPullParserArray[parseArrayIncrement++][1] = valueFromXML;
 
                     }
 
+                } while(eventType != XmlPullParser.END_DOCUMENT);
+            }
+            catch (ClientProtocolException e){
+                e.printStackTrace();
+            }
+            catch (XmlPullParserException e){
+                e.printStackTrace();
+            }
+            catch (URISyntaxException e){
+                e.printStackTrace();
+            }
+            catch (IOException e){
+                e.printStackTrace();
+            }
+            finally {
 
-                }
-            } catch (MalformedURLException e) {
-                Log.d(TAG, "MalformedURLException", e);
-            } catch (IOException e) {
-                Log.d(TAG, "IOException", e);
-            } catch (ParserConfigurationException e) {
-                Log.d(TAG, "ParserConfigurationException", e);
-            } catch (SAXException e) {
-                Log.d(TAG, "Sax Exception", e);
-            } finally {
             }
             return null;
         }
 
-            protected void onPostExecute(String result){
-
-            companyNameTextView.setText(name);
-            yearLowTextView.setText("Year Low: " + yearLow);
-            yearHighTextView.setText("Year High: " + yearHigh);
-            daysLowTextView.setText("Days Low: " + daysLow);
-            daysHighTextView.setText("Days High: " + daysHigh);
-            lastTradePriceOnlyTextView.setText("Last Price: " + lastTradePriceOnly);
-            changeTextView.setText("Change: " + change);
-            daysRangeTextView.setText("Daily Price Range: " + daysRange);
-
-
-        }
-
+            public  InputStream getURlData(String url) throws URISyntaxException, ClientProtocolException, IOException{ //do the throws otherwise we would need a try block
+                //get access to URL resources
+                DefaultHttpClient client = new DefaultHttpClient();
+                //a way to get infromation from URl
+                HttpGet method = new HttpGet(new URI(url));
+                //get a response from client whether connection was stable or not
+                HttpResponse res = client.execute(method);
+                //tells system where the content is coming from
+                return  res.getEntity().getContent();
             }
 
-        private StockInfo getStockInformation(Element entry){
-            String stockName = getTextValue(entry, "Name");
-            String stockYearLow = getTextValue(entry, "YearLow");
-            String stockYearHigh = getTextValue(entry, "YearHigh");
-            String stockDaysLow = getTextValue(entry, "DaysLow");
-            String stockDaysHigh = getTextValue(entry, "DaysHigh");
-            String stockLastTradePriceOnly = getTextValue(entry, "LastTradePriceOnly");
-            String stockChange = getTextValue(entry, "Change");
-            String stockDaysRange = getTextValue(entry, "DaysRange");
+            public  final void beginDocument(XmlPullParser parser, String firstElementName)throws XmlPullParserException, IOException {
 
-            StockInfo theStock = new StockInfo(stockDaysLow, stockDaysHigh, stockYearLow, stockYearHigh, stockName, stockLastTradePriceOnly, stockChange, stockDaysRange);
-
-            return  theStock;
-
-        }
-
-        private String getTextValue(Element entry, String tagName){
-            String tagValueToReturn = null;
-            NodeList nl = entry.getElementsByTagName(tagName);
-            if (nl!= null && nl.getLength() >0 ){
-                Element element = (Element) nl.item(0);
-
-                tagValueToReturn = element.getFirstChild().getNodeValue();
+                int type; //type of tag we are working with
+                //define nothing in the while block below because all we want to do is skip what does not fulfill the conditions below
+                //dont understand why we are doing what is below??
+                while((type = parser.next()) != parser.START_TAG && type != parser.END_DOCUMENT){
+                    ;
+                }
+                //throw error if start tag not found at all
+                if(type != parser.START_TAG){
+                    throw new XmlPullParserException("No Start Tag Found");
+                }
+                //verify that the tag passed in is really the first element passed in from our yahoo XML document
+                if(!parser.getName().equals(firstElementName)){
+                    throw new XmlPullParserException("Unexpected Start Tag Found " + parser.getName() + ", expected " + firstElementName);
+                }
             }
-            return tagValueToReturn;
+
+            public  final void nextElement(XmlPullParser parser)throws XmlPullParserException, IOException {
+                int type;
+                //cycle through all that data.
+                while((type = parser.next()) != parser.START_TAG && type != parser.END_DOCUMENT){
+                    ;
+                }
+            }
+            protected void onPostExecute(String result){ //writes information to our GUI
+
+            companyNameTextView.setText( xmlPullParserArray[9][1]); //this is the 9th element in the stockquote XML that is returned
+            yearLowTextView.setText("Year Low: " + xmlPullParserArray[4][1]);
+            yearHighTextView.setText("Year High: " + xmlPullParserArray[5][1]);
+            daysLowTextView.setText("Days Low: " + xmlPullParserArray[2][1]);
+            daysHighTextView.setText("Days High: " + xmlPullParserArray[3][1]);
+            lastTradePriceOnlyTextView.setText("Last Price: " + xmlPullParserArray[7][1]);
+            changeTextView.setText("Change: " + xmlPullParserArray[1][1]);
+            daysRangeTextView.setText("Daily Price Range: " + xmlPullParserArray[8][1]);
+
+
         }
+
+        }
+
 
     }
 
