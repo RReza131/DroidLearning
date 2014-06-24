@@ -78,8 +78,11 @@ public class StockInfoActivity extends Activity{
     String change = "";
     String daysRange = "";
 
+    //String yahooURLFirst = "https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quote%20where%20symbol%20in%20(%22";
+    //String yahooURLSecond = "%22)&diagnostics=true&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys";
+
     String yahooURLFirst = "https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20yahoo.finance.quote%20where%20symbol%20in%20(%22";
-    String yahooURLSecond = "%22)&diagnostics=true&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys";
+    String yahooURLSecond = "%22)&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys";
 
     //name of nodes from the yahoo.com source we are pulling from
     String[][] xmlPullParserArray = {{"AverageDailyVolume", "0"},{"Change", "0"},{"DaysLow", "0"},
@@ -149,7 +152,9 @@ public class StockInfoActivity extends Activity{
 
                         String valueFromXML = parser.getText();
 
-                        xmlPullParserArray[parseArrayIncrement++][1] = valueFromXML;
+                        if(parseArrayIncrement < 13) {
+                            xmlPullParserArray[parseArrayIncrement++][1] = valueFromXML;
+                        }
 
                     }
 
