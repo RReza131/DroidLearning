@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/add_contact"
+            android:id="@+id/addContactTextView"
+            android:layout_column="0"
+            android:padding="@dimen/padding_5dp"
+            android:textAppearance="?android:attr/textAppearanceLarge"/>
+    </TableRow>
+</TableLayout>
