@@ -2,7 +2,6 @@
 <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -11,8 +10,8 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/add_contact"
-            android:id="@+id/addContactTextView"
+            android:text="@string/edit_contact_title"
+            android:id="@+id/editContactTextView"
             android:layout_column="0"
             android:padding="@dimen/padding_5dp"
             android:textAppearance="?android:attr/textAppearanceLarge"
@@ -40,7 +39,7 @@
             android:padding="@dimen/padding_5dp"
             android:inputType="textPersonName" >
             <requestFocus/>
-            </EditText>
+        </EditText>
 
     </TableRow>
 
@@ -145,11 +144,20 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/save_data"
-            android:id="@+id/addButton"
+            android:text="@string/edit_button"
+            android:id="@+id/editButton"
             android:layout_column="0"
             android:layout_weight="1"
-            android:onClick="addNewContact"/>
+            android:onClick="editContact"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/delete_button"
+            android:id="@+id/deleteButton"
+            android:layout_column="0"
+            android:layout_weight="2"
+            android:onClick="removeContact"/>
     </TableRow>
 
 </TableLayout>
