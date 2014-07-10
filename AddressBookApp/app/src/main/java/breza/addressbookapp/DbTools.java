@@ -85,7 +85,7 @@ public class DbTools extends SQLiteOpenHelper {
     public ArrayList<HashMap<String,String>> getAllContacts(){
         ArrayList<HashMap<String,String>> contactArrayList = new ArrayList<HashMap<String,String>>();
 
-        String selectQuery = "SELECT * FROM contacts";
+        String selectQuery = "SELECT * FROM contacts ORDER BY lastName";
 
         SQLiteDatabase database = this.getWritableDatabase();
 
